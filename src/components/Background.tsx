@@ -7,6 +7,7 @@ import useIsMounted from '../helpers/useIsMounted';
 import useFrameLoop from '../helpers/useFrameLoop';
 import useMousePointerPosition from '../helpers/useMousePointerPosition';
 import { getRandomInt } from '../helpers/randomizer';
+import { checkAPoint, distanceBetweenTwoPoints } from '../helpers/colliders';
 
 interface CircleProperties {
   speedX: number;
@@ -27,27 +28,25 @@ function generateCircles(
   height: number
 ) {
   const result: Array<CircleProperties> = [];
-  for (let i = 0; i < numberOfCircles; i += 1) {
-    const randomX = getRandomInt(0, width);
-    const randomY = getRandomInt(0, height);
-    const speedX = getRandomInt(1, 7);
-    const speedY = getRandomInt(1, 7);
-    const radius = 10;
-    const circleProps = { randomX, randomY, speedX, speedY, radius };
-    result.push(circleProps);
-  }
+  for (let i = 0; i < numberOfCircles; i += 1)
+    result.push({
+      randomX: getRandomInt(0, width),
+      randomY: getRandomInt(0, height),
+      speedX: getRandomInt(1, 3),
+      speedY: getRandomInt(1, 3),
+      radius: 10,
+    });
   return result;
 }
 function moveCircles(
   circles: Array<CircleProperties>,
-  lines: Array<LineProperties>,
   width: number,
   height: number,
   clientX: number,
   clientY: number
 ) {
   const circleMove: Array<CircleProperties> = circles;
-
+  const linesMove: Array<LineProperties> = [];
   for (let i = 0; i < circleMove.length; i += 1) {
     circleMove[i].randomX += circleMove[i].speedX;
     circleMove[i].randomY += circleMove[i].speedY;
@@ -63,11 +62,38 @@ function moveCircles(
     ) {
       circleMove[i].speedY = -circleMove[i].speedY;
     }
+
+    // Check if point circle is inside the line
+    if (
+      checkAPoint(
+        circleMove[i].randomX,
+        circleMove[i].randomY,
+        clientX,
+        clientY,
+        Math.min(width, height) * 0.2
+      )
+    ) {
+      for (let j = i; j < circleMove.length; j += 1) {
+        // calculate distance between 2 circles
+        const distance = distanceBetweenTwoPoints(
+          circleMove[i].randomX,
+          circleMove[i].randomY,
+          circleMove[j].randomX,
+          circleMove[j].randomY
+        );
+        if (distance <= Math.min(width, height) * 0.15) {
+          linesMove.push({
+            x0: circleMove[i].randomX,
+            y0: circleMove[i].randomY,
+            x1: circleMove[j].randomX,
+            y1: circleMove[j].randomY,
+          });
+        }
+      }
+    }
   }
-  // console.log({ clientX, clientY });
-  return circleMove;
+  return { circleMove, linesMove };
 }
-function moveLines(lines: Array<LineProperties>) {}
 function Background() {
   const isMounted = useIsMounted();
   const [time, setTime] = useState<number>(0);
@@ -79,17 +105,33 @@ function Background() {
 
   useEffect(() => {
     if (isMounted()) {
-      setCircles(generateCircles(100, width, height));
+      setCircles(
+        generateCircles(Math.min(width, height) * 0.05, width, height)
+      );
     }
   }, [isMounted, height, width]);
   useFrameLoop((timeValue, deltaTimeValue) => {
-    moveCircles(circles, lines, width, height, clientX, clientY);
+    const { linesMove } = moveCircles(circles, width, height, clientX, clientY);
+    setLines(linesMove);
     setTime(timeValue);
     setDeltaTime(deltaTimeValue);
   });
   return (
-    <div className="fixed left-0 top-0 h-full w-full bg-inherit">
-      <Line x0={0} y0={0} x1={10} y1={10} />
+    <div className="fixed left-0 top-0 h-full w-full bg-inherit overflow-hidden">
+      {lines?.map((value, index) => {
+        const keyName = `lineNumber${index}`;
+        return (
+          <div id={keyName} key={keyName} className="border-blue-400">
+            <Line
+              x0={value.x0}
+              y0={value.y0}
+              x1={value.x1}
+              y1={value.y1}
+              className=" -z-10 overflow-hidden border-none "
+            />
+          </div>
+        );
+      })}
       {circles?.map((value, index) => {
         const keyName = `circleNumber${index}`;
         return (
