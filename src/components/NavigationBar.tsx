@@ -1,7 +1,10 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable jsx-a11y/no-noninteractive-tabindex */
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BeakerIcon } from '@heroicons/react/24/solid';
+import { BeakerIcon, Bars4Icon } from '@heroicons/react/24/solid';
 import daisyUIThemes from '../assets/daisyUIThemes.json';
+import useChangeTheme from '../helpers/useChangeTheme';
 
 const routers = [
   { link: '/', text: 'Home' },
@@ -11,64 +14,164 @@ const routers = [
 ];
 
 type NavigationProps = {
-  changeTheme: (value: string) => void;
-  theme: string;
+  children: JSX.Element | JSX.Element[] | string | string[];
 };
 
-function NavigationBar({ changeTheme, theme }: NavigationProps) {
+function NavigationBar({ children }: NavigationProps) {
   const { pathname } = useLocation();
+  const [theme, changeTheme] = useChangeTheme('theme', '');
 
   return (
-    <div className="navbar bg-base-100 shadow-lg">
-      <div className="flex-1">
-        <Link to="/">
-          <span className="btn btn-ghost normal-case text-xl">daisyUI</span>
-        </Link>
+    <main data-theme={theme}>
+      <div className="drawer">
+        <input
+          id="navigation-drawer"
+          title="navigation-drawer"
+          type="checkbox"
+          className="drawer-toggle"
+        />
+        <div className="drawer-content">
+          <div className="relative flex items-top justify-center min-h-screen sm:pt-0">
+            <div className="fixed top-0 navbar ">
+              <div className="flex-1">
+                <nav className="navbar top-0 left-0 fixed ">
+                  <div className="navbar top-0 -z-10 left-0 bg-base-100 fixed  bg-opacity-30 backdrop-filter backdrop-blur-lg" />
+                  <div className="flex-1">
+                    <Link to="/">
+                      <span className="btn btn-ghost normal-case text-xl z-20 ">
+                        Zalven
+                      </span>
+                    </Link>
+                  </div>
+                  <div className="visible sm:invisible">
+                    <div className="dropdown dropdown-end">
+                      <label htmlFor="navigation-drawer">
+                        <Bars4Icon className="w-8" />
+                      </label>
+                    </div>
+                  </div>
+                  <div className="hidden sm:flex">
+                    <ul className="menu menu-horizontal p-0">
+                      {routers.map((value) => {
+                        return (
+                          <li key={value.link} className="active:bg-none">
+                            <Link to={value.link} id={value.link}>
+                              <span
+                                className={
+                                  pathname === value.link ? 'text-primary' : ''
+                                }
+                              >
+                                {value.text}
+                              </span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <div className="dropdown dropdown-end">
+                      <button
+                        type="button"
+                        tabIndex={0}
+                        className="btn m-1 btn-primary"
+                        title="theme-selector"
+                      >
+                        <BeakerIcon className="w-6" />
+                      </button>
+                      <div
+                        title="theme-dropdown"
+                        tabIndex={0}
+                        className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 "
+                      >
+                        <div className="h-52 overflow-y-auto overflow-x-hidden">
+                          {daisyUIThemes.themes.map((value, index) => {
+                            return (
+                              <button
+                                type="button"
+                                key={value}
+                                title={value}
+                                aria-label={value}
+                                data-title={index}
+                                onClick={() => changeTheme(value)}
+                                className={
+                                  value === theme
+                                    ? 'btn btn-active w-full shadow overflow-hidden'
+                                    : 'btn btn-ghost w-full shadow-none  overflow-hidden'
+                                }
+                              >
+                                {value}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </nav>
+              </div>
+            </div>
+            <link
+              href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700,900&display=swap"
+              rel="stylesheet"
+            />
+            <div className="mx-auto max-w-4xl rounded-3xl p-20 text-center">
+              {children}
+            </div>
+          </div>
+        </div>
+        <div className="drawer-side">
+          <label htmlFor="navigation-drawer" className="drawer-overlay" />
+          <ul className="menu p-4 overflow-y-auto w-80 bg-base-100 text-base-content">
+            {routers.map((value) => {
+              return (
+                <li
+                  key={value.link}
+                  id={value.link}
+                  className={pathname === value.link ? 'text-primary' : ''}
+                >
+                  <Link to={value.link}>{value.text}</Link>
+                </li>
+              );
+            })}
+            <li>
+              <label htmlFor="my-modal" className="modal-button">
+                <BeakerIcon className="w-5" /> Select Theme
+              </label>
+            </li>
+          </ul>
+        </div>
       </div>
-      <div className="flex-none">
-        <ul className="menu menu-horizontal p-0">
-          {routers.map((value) => {
-            return (
-              <li key={value.link} id={value.text}>
-                <Link to={value.link} id={value.link}>
-                  <span
-                    className={pathname === value.link ? 'text-primary' : ''}
-                  >
-                    {value.text}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-          <li className="w-44">
-            <span>
-              <BeakerIcon className="w-6 text-primary" />
-            </span>
-            <ul className="bg-base-100 btn-group p-5">
-              {daisyUIThemes.themes.map((value, index) => {
-                return (
-                  <li
-                    id={value}
-                    key={value}
-                    className={value === theme ? 'btn-active' : ' btn'}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => changeTheme(value)}
-                      title={value}
-                      aria-label={value}
-                      data-title={index}
-                    >
-                      {value}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </li>
-        </ul>
+      <input type="checkbox" id="my-modal" className="modal-toggle" />
+      <div className="modal">
+        <div className="modal-box">
+          <div className="h-52 overflow-y-auto overflow-x-hidden ">
+            {daisyUIThemes.themes.map((value, index) => {
+              return (
+                <button
+                  type="button"
+                  key={value}
+                  title={value}
+                  aria-label={value}
+                  data-title={index}
+                  onClick={() => changeTheme(value)}
+                  className={
+                    value === theme
+                      ? 'btn btn-active w-full shadow overflow-hidden'
+                      : 'btn btn-ghost w-full shadow-none  overflow-hidden'
+                  }
+                >
+                  {value}
+                </button>
+              );
+            })}
+          </div>
+          <div className="modal-action">
+            <label htmlFor="my-modal" className="btn btn-outline ">
+              Close
+            </label>
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
 
