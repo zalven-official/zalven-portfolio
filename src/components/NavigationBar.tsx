@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { BeakerIcon, Bars4Icon } from '@heroicons/react/24/solid';
 import daisyUIThemes from '../assets/daisyUIThemes.json';
 import useChangeTheme from '../helpers/useChangeTheme';
+import Background from './Background';
 
 const routers = [
   { link: '/', text: 'Home' },
@@ -30,11 +31,12 @@ function NavigationBar({ children }: NavigationProps) {
           type="checkbox"
           className="drawer-toggle"
         />
-        <div className="drawer-content">
-          <div className="relative flex items-top justify-center min-h-screen sm:pt-0">
-            <div className="fixed top-0 navbar ">
-              <div className="flex-1">
-                <nav className="navbar top-0 left-0 fixed ">
+        <div className="drawer-content ">
+          <Background />
+          <div className="relative flex items-center justify-center sm:pt-0 ">
+            <div className="fixed top-0 navbar  max-w-7xl ">
+              <div className="flex-1 ">
+                <nav className="navbar top-0 fixed max-w-7xl ">
                   <div className="navbar top-0 -z-10 left-0 bg-base-100 fixed  bg-opacity-30 backdrop-filter backdrop-blur-lg" />
                   <div className="flex-1">
                     <Link to="/">
@@ -68,7 +70,7 @@ function NavigationBar({ children }: NavigationProps) {
                         );
                       })}
                     </ul>
-                    <div className="dropdown dropdown-end">
+                    <div className="dropdown dropdown-end s">
                       <button
                         type="button"
                         tabIndex={0}
@@ -80,7 +82,7 @@ function NavigationBar({ children }: NavigationProps) {
                       <div
                         title="theme-dropdown"
                         tabIndex={0}
-                        className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 "
+                        className="dropdown-content menu p-2 bg-base-100 rounded-box w-52 shadow-2xl"
                       >
                         <div className="h-52 overflow-y-auto overflow-x-hidden">
                           {daisyUIThemes.themes.map((value, index) => {
@@ -95,7 +97,7 @@ function NavigationBar({ children }: NavigationProps) {
                                 className={
                                   value === theme
                                     ? 'btn btn-active w-full shadow overflow-hidden'
-                                    : 'btn btn-ghost w-full shadow-none  overflow-hidden'
+                                    : 'btn btn-ghost w-full shadow-none overflow-hidden'
                                 }
                               >
                                 {value}
@@ -109,13 +111,7 @@ function NavigationBar({ children }: NavigationProps) {
                 </nav>
               </div>
             </div>
-            <link
-              href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700,900&display=swap"
-              rel="stylesheet"
-            />
-            <div className="mx-auto max-w-4xl rounded-3xl p-20 text-center">
-              {children}
-            </div>
+            <div className="flex-1  max-w-7xl mt-16">{children}</div>
           </div>
         </div>
         <div className="drawer-side">
