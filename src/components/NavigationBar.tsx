@@ -46,7 +46,7 @@ function NavigationBar({ children }: NavigationProps) {
                     </Link>
                   </div>
                   <div className="visible sm:invisible">
-                    <div className="dropdown dropdown-end">
+                    <div className="dropdown dropdown-end mx-5">
                       <label htmlFor="navigation-drawer">
                         <Bars4Icon className="w-8" />
                       </label>
