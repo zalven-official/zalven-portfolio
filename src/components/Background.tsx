@@ -5,7 +5,11 @@ import useWindowDimensions from '../helpers/useWindowDimensions';
 import useIsMounted from '../helpers/useIsMounted';
 import useFrameLoop from '../helpers/useFrameLoop';
 import useMousePointerPosition from '../helpers/useMousePointerPosition';
-import { getRandomInt, randomChoice } from '../helpers/randomizer';
+import {
+  getRandomInt,
+  randomChoice,
+  randomChoiceString,
+} from '../helpers/randomizer';
 import { checkAPoint, distanceBetweenTwoPoints } from '../helpers/colliders';
 
 interface CircleProperties {
@@ -20,6 +24,8 @@ interface LineProperties {
   y0: number;
   x1: number;
   y1: number;
+  dist: number;
+  maxDist: number;
 }
 function generateCircles(
   numberOfCircles: number,
@@ -81,12 +87,14 @@ function moveCircles(
           circleMove[j].randomX - rad,
           circleMove[j].randomY - rad
         );
-        if (distance <= Math.min(width, height) * 0.15) {
+        if (distance <= Math.min(width, height) * 0.25) {
           linesMove.push({
             x0: circleMove[i].randomX,
             y0: circleMove[i].randomY,
             x1: circleMove[j].randomX,
             y1: circleMove[j].randomY,
+            dist: distance,
+            maxDist: Math.min(width, height) * 0.25,
           });
         }
       }
@@ -107,8 +115,9 @@ function Background() {
 
   useEffect(() => {
     if (isMounted()) {
+      const circleCount = Math.min(width, height) * 0.05;
       setCircles(
-        generateCircles(Math.min(width, height) * 0.05, width, height)
+        generateCircles(circleCount <= 100 ? circleCount : 100, width, height)
       );
     }
   }, [isMounted, height, width]);
@@ -122,24 +131,37 @@ function Background() {
     <div className="fixed left-0 top-0 h-full w-full bg-inherit overflow-hidden  ">
       {lines?.map((value, index) => {
         const keyName = `lineNumber${index}`;
+
+        const thikness = `${
+          (value.maxDist - value.dist) / value.maxDist / 2
+        }em`;
+        const opacity = `${
+          ((value.maxDist - value.dist) / value.maxDist) * 150
+        }%`;
+        const selected = randomChoiceString(['text-primary', 'text-secondary']);
         return (
-          <div key={keyName} className="fixed overflow-hidden">
+          <div
+            key={keyName}
+            className="fixed overflow-hidden rounded-3xl "
+            style={{
+              opacity,
+            }}
+          >
             <svg
-              className="fixed text-primary fill-current"
+              className={`fixed fill-current ${selected}`}
               width={width}
               height={height}
               stroke="currentColor"
             >
-              <line x1={value.x0} y1={value.y0} x2={value.x1} y2={value.y1} />
+              <line
+                x1={value.x0}
+                y1={value.y0}
+                x2={value.x1}
+                y2={value.y1}
+                strokeWidth={thikness}
+              />
             </svg>
-            <svg
-              className="fixed text-primary blur-md fill-current"
-              width={width}
-              height={height}
-              stroke="currentColor"
-            >
-              <line x1={value.x0} y1={value.y0} x2={value.x1} y2={value.y1} />
-            </svg>
+
             <svg
               className=" fixed text-base blur-xl fill-current"
               width={width}
@@ -153,12 +175,21 @@ function Background() {
       })}
       {circles?.map((value, index) => {
         const keyName = `circleNumber${index}`;
+        const selected = randomChoiceString(['text-current', 'text-primary']);
         return (
           <div id={keyName} key={keyName}>
             <PlusCircleIcon
-              className="fixed overflow-hidden "
+              className={`fixed overflow-hidden ${selected}`}
               style={{
                 width: `${value.radius}px`,
+                top: `${value.randomY - value.radius / 2}px`,
+                left: `${value.randomX - value.radius / 2}px`,
+              }}
+            />
+            <PlusCircleIcon
+              className={`fixed overflow-hidden blur-md ${selected}`}
+              style={{
+                width: `${value.radius + 2}px`,
                 top: `${value.randomY - value.radius / 2}px`,
                 left: `${value.randomX - value.radius / 2}px`,
               }}

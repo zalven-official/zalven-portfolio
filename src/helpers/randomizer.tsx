@@ -7,5 +7,8 @@ export function getRandomInt(min_val: number, max_val: number) {
 export function randomChoice(value: Array<number>) {
   return value[Math.floor(Math.random() * value.length)];
 }
+export function randomChoiceString(value: Array<string>) {
+  return value[Math.floor(Math.random() * value.length)];
+}
 
 export default getRandomInt;

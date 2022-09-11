@@ -53,7 +53,7 @@ function Home() {
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 whileHover={{ scale: 1.2 }}
-                className="text-primary"
+                className="text-primary hover:text-secondary"
               >
                 Z
               </motion.span>
@@ -67,7 +67,7 @@ function Home() {
                 }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 whileHover={{ scale: 1.2 }}
-                className="text-primary"
+                className="text-primary hover:text-secondary"
               >
                 B
               </motion.span>
