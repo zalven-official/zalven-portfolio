@@ -1,12 +1,11 @@
 /* eslint-disable react/prefer-stateless-function */
 import React, { useState, useEffect } from 'react';
 import { PlusCircleIcon } from '@heroicons/react/24/solid';
-import { Line } from 'react-lineto';
 import useWindowDimensions from '../helpers/useWindowDimensions';
 import useIsMounted from '../helpers/useIsMounted';
 import useFrameLoop from '../helpers/useFrameLoop';
 import useMousePointerPosition from '../helpers/useMousePointerPosition';
-import { getRandomInt } from '../helpers/randomizer';
+import { getRandomInt, randomChoice } from '../helpers/randomizer';
 import { checkAPoint, distanceBetweenTwoPoints } from '../helpers/colliders';
 
 interface CircleProperties {
@@ -32,9 +31,9 @@ function generateCircles(
     result.push({
       randomX: getRandomInt(0, width),
       randomY: getRandomInt(0, height),
-      speedX: getRandomInt(1, 3),
-      speedY: getRandomInt(1, 3),
-      radius: 10,
+      speedX: getRandomInt(1, 2) * randomChoice([-1, 1]),
+      speedY: getRandomInt(1, 2) * randomChoice([-1, 1]),
+      radius: 5,
     });
   return result;
 }
@@ -70,16 +69,17 @@ function moveCircles(
         circleMove[i].randomY,
         clientX,
         clientY,
-        Math.min(width, height) * 0.2
+        Math.max(width, height) * 0.2
       )
     ) {
       for (let j = i; j < circleMove.length; j += 1) {
         // calculate distance between 2 circles
+        const rad: number = circleMove[i].radius / 2;
         const distance = distanceBetweenTwoPoints(
-          circleMove[i].randomX,
-          circleMove[i].randomY,
-          circleMove[j].randomX,
-          circleMove[j].randomY
+          circleMove[i].randomX - rad,
+          circleMove[i].randomY - rad,
+          circleMove[j].randomX - rad,
+          circleMove[j].randomY - rad
         );
         if (distance <= Math.min(width, height) * 0.15) {
           linesMove.push({
@@ -96,7 +96,9 @@ function moveCircles(
 }
 function Background() {
   const isMounted = useIsMounted();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [time, setTime] = useState<number>(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [deltaTime, setDeltaTime] = useState<number>(0);
   const { width, height } = useWindowDimensions();
   const { clientX, clientY } = useMousePointerPosition();
@@ -121,14 +123,31 @@ function Background() {
       {lines?.map((value, index) => {
         const keyName = `lineNumber${index}`;
         return (
-          <div id={keyName} key={keyName} className="border-blue-400">
-            <Line
-              x0={value.x0}
-              y0={value.y0}
-              x1={value.x1}
-              y1={value.y1}
-              className=" -z-10 overflow-hidden border-none "
-            />
+          <div key={keyName} className="fixed overflow-hidden">
+            <svg
+              className="fixed text-primary fill-current"
+              width={width}
+              height={height}
+              stroke="currentColor"
+            >
+              <line x1={value.x0} y1={value.y0} x2={value.x1} y2={value.y1} />
+            </svg>
+            <svg
+              className="fixed text-primary blur-md fill-current"
+              width={width}
+              height={height}
+              stroke="currentColor"
+            >
+              <line x1={value.x0} y1={value.y0} x2={value.x1} y2={value.y1} />
+            </svg>
+            <svg
+              className=" fixed text-base blur-xl fill-current"
+              width={width}
+              height={height}
+              stroke="currentColor"
+            >
+              <line x1={value.x0} y1={value.y0} x2={value.x1} y2={value.y1} />
+            </svg>
           </div>
         );
       })}
@@ -137,11 +156,11 @@ function Background() {
         return (
           <div id={keyName} key={keyName}>
             <PlusCircleIcon
-              className="absolute "
+              className="fixed overflow-hidden "
               style={{
                 width: `${value.radius}px`,
-                top: `${value.randomY}px`,
-                left: `${value.randomX}px`,
+                top: `${value.randomY - value.radius / 2}px`,
+                left: `${value.randomX - value.radius / 2}px`,
               }}
             />
           </div>
