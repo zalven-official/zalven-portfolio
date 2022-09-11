@@ -119,7 +119,7 @@ function Background() {
     setDeltaTime(deltaTimeValue);
   });
   return (
-    <div className="fixed left-0 top-0 h-full w-full bg-inherit overflow-hidden">
+    <div className="fixed left-0 top-0 h-full w-full bg-inherit overflow-hidden  ">
       {lines?.map((value, index) => {
         const keyName = `lineNumber${index}`;
         return (

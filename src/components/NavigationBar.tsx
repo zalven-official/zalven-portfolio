@@ -33,11 +33,11 @@ function NavigationBar({ children }: NavigationProps) {
         />
         <div className="drawer-content ">
           <Background />
-          <div className="relative flex items-center justify-center sm:pt-0 ">
-            <div className="fixed top-0 navbar  max-w-7xl ">
+          <div className="relative flex items-start justify-center sm:pt-0 ">
+            <div className="fixed top-0 navbar  max-w-7xl">
               <div className="flex-1 ">
                 <nav className="navbar top-0 fixed max-w-7xl ">
-                  <div className="navbar top-0 -z-10 left-0 bg-base-100 fixed  bg-opacity-30 backdrop-filter backdrop-blur-lg" />
+                  <div className="navbar top-0 -z-10 left-0 bg-base-100 fixed  bg-opacity-30 backdrop-filter backdrop-blur-md" />
                   <div className="flex-1">
                     <Link to="/">
                       <span className="btn btn-ghost normal-case text-xl z-20 ">
@@ -111,7 +111,7 @@ function NavigationBar({ children }: NavigationProps) {
                 </nav>
               </div>
             </div>
-            <div className="flex-1  max-w-7xl mt-16">{children}</div>
+            <div className="flex-0 w-full max-w-7xl ">{children}</div>
           </div>
         </div>
         <div className="drawer-side">
