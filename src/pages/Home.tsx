@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { RefObject, useRef, useEffect, useState } from 'react';
 import { BuildingOffice2Icon } from '@heroicons/react/24/solid';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   AiFillFacebook,
   AiFillGithub,
@@ -11,6 +11,7 @@ import {
 } from 'react-icons/ai';
 import { FaDiscord } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import useOnScroll from '../helpers/useOnScroll';
 
 const container = {
   hidden: { opacity: 1, scale: 0 },
@@ -32,9 +33,23 @@ const item = {
   },
 };
 function Home() {
+  const mouseSroll: RefObject<HTMLInputElement> = useRef(null);
+  const navigate = useNavigate();
+  const [canNavigate, setCanNavigate] = useState<boolean>(false);
+  useEffect(() => {
+    setTimeout(() => {
+      setCanNavigate(true);
+    }, 1000);
+  }, []);
+  useOnScroll(mouseSroll, (event) => {
+    if (event.deltaY > 0 && canNavigate) {
+      navigate('/About');
+    }
+  });
   return (
     <div>
       <motion.div
+        ref={mouseSroll}
         variants={container}
         className="hero min-h-screen overflow-hidden "
         initial="hidden"
