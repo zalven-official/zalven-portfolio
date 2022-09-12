@@ -1,10 +1,11 @@
 /* eslint-disable react/prefer-stateless-function */
-import React, { useState, useEffect } from 'react';
-import { PlusCircleIcon } from '@heroicons/react/24/solid';
+import React, { RefObject, useState, useEffect, useRef } from 'react';
 import useWindowDimensions from '../helpers/useWindowDimensions';
 import useIsMounted from '../helpers/useIsMounted';
 import useFrameLoop from '../helpers/useFrameLoop';
 import useMousePointerPosition from '../helpers/useMousePointerPosition';
+import useOnClickOutside from '../helpers/useOnClickOutside';
+import useOnScroll from '../helpers/useOnScroll';
 import {
   getRandomInt,
   randomChoice,
@@ -27,6 +28,21 @@ interface LineProperties {
   dist: number;
   maxDist: number;
 }
+
+function generateCircle(
+  randomX: number,
+  randomY: number,
+  speedX: number,
+  speedY: number
+) {
+  return {
+    randomX,
+    randomY,
+    speedX,
+    speedY,
+    radius: 5,
+  };
+}
 function generateCircles(
   numberOfCircles: number,
   width: number,
@@ -34,13 +50,15 @@ function generateCircles(
 ) {
   const result: Array<CircleProperties> = [];
   for (let i = 0; i < numberOfCircles; i += 1)
-    result.push({
-      randomX: getRandomInt(0, width),
-      randomY: getRandomInt(0, height),
-      speedX: getRandomInt(1, 2) * randomChoice([-1, 1]),
-      speedY: getRandomInt(1, 2) * randomChoice([-1, 1]),
-      radius: 5,
-    });
+    result.push(
+      generateCircle(
+        getRandomInt(0, width),
+        getRandomInt(0, height),
+        getRandomInt(1, 4) * randomChoice([-1, 1]),
+        getRandomInt(1, 4) * randomChoice([-1, 1])
+      )
+    );
+
   return result;
 }
 function moveCircles(
@@ -52,9 +70,13 @@ function moveCircles(
 ) {
   const circleMove: Array<CircleProperties> = circles;
   const linesMove: Array<LineProperties> = [];
+  const maxDist = Math.min(width, height) * 0.25;
+  const mouseMaxDist = Math.max(width, height) * 0.2;
+
   for (let i = 0; i < circleMove.length; i += 1) {
     circleMove[i].randomX += circleMove[i].speedX;
     circleMove[i].randomY += circleMove[i].speedY;
+
     if (
       circleMove[i].randomX > width - circleMove[i].radius ||
       circleMove[i].randomX < circleMove[i].radius
@@ -75,34 +97,36 @@ function moveCircles(
         circleMove[i].randomY,
         clientX,
         clientY,
-        Math.max(width, height) * 0.2
+        mouseMaxDist
       )
     ) {
-      for (let j = i; j < circleMove.length; j += 1) {
+      const rad: number = circleMove[i].radius / 2;
+      for (let j = i + 1; j < circleMove.length; j += 1) {
         // calculate distance between 2 circles
-        const rad: number = circleMove[i].radius / 2;
         const distance = distanceBetweenTwoPoints(
           circleMove[i].randomX - rad,
           circleMove[i].randomY - rad,
           circleMove[j].randomX - rad,
           circleMove[j].randomY - rad
         );
-        if (distance <= Math.min(width, height) * 0.25) {
+        if (distance <= maxDist)
           linesMove.push({
             x0: circleMove[i].randomX,
             y0: circleMove[i].randomY,
             x1: circleMove[j].randomX,
             y1: circleMove[j].randomY,
             dist: distance,
-            maxDist: Math.min(width, height) * 0.25,
+            maxDist,
           });
-        }
       }
     }
   }
+
   return { circleMove, linesMove };
 }
 function Background() {
+  const mouseClick: RefObject<HTMLInputElement> = useRef(null);
+  const mouseSroll: RefObject<HTMLInputElement> = useRef(null);
   const isMounted = useIsMounted();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [time, setTime] = useState<number>(0);
@@ -112,6 +136,7 @@ function Background() {
   const { clientX, clientY } = useMousePointerPosition();
   const [circles, setCircles] = useState<Array<CircleProperties>>([]);
   const [lines, setLines] = useState<Array<LineProperties>>([]);
+  const [scrollSpeed, setScrollSpeed] = useState<number>(1);
 
   useEffect(() => {
     if (isMounted()) {
@@ -121,6 +146,32 @@ function Background() {
       );
     }
   }, [isMounted, height, width]);
+
+  useOnClickOutside(mouseClick, () => {
+    circles.shift();
+    circles.push(
+      generateCircle(
+        clientX,
+        clientY,
+        randomChoice([-scrollSpeed, scrollSpeed]),
+        randomChoice([-scrollSpeed, scrollSpeed])
+      )
+    );
+  });
+  useOnScroll(mouseSroll, (event) => {
+    const speedAdjustment = 0.2;
+    const maxSpeedAdjustment = 10;
+    if (event.deltaY < 0 && scrollSpeed <= maxSpeedAdjustment) {
+      setScrollSpeed(scrollSpeed + speedAdjustment);
+    }
+    if (event.deltaY > 0 && scrollSpeed >= 0) {
+      setScrollSpeed(scrollSpeed - speedAdjustment);
+    }
+    for (let i = 0; i < circles.length; i += 1) {
+      circles[i].speedX = scrollSpeed * (circles[i].speedX <= 0 ? -1 : 1);
+      circles[i].speedY = scrollSpeed * (circles[i].speedY <= 0 ? -1 : 1);
+    }
+  });
   useFrameLoop((timeValue, deltaTimeValue) => {
     const { linesMove } = moveCircles(circles, width, height, clientX, clientY);
     setLines(linesMove);
@@ -128,75 +179,80 @@ function Background() {
     setDeltaTime(deltaTimeValue);
   });
   return (
-    <div className="fixed left-0 top-0 h-full w-full bg-inherit overflow-hidden  ">
-      {lines?.map((value, index) => {
-        const keyName = `lineNumber${index}`;
+    <div ref={mouseSroll}>
+      <div
+        className="fixed left-0 top-0 h-full w-full bg-inherit overflow-hidden "
+        ref={mouseClick}
+      >
+        {lines?.map((value, index) => {
+          const keyName = `lineNumber${index}`;
 
-        const thikness = `${
-          (value.maxDist - value.dist) / value.maxDist / 2
-        }em`;
-        const opacity = `${
-          ((value.maxDist - value.dist) / value.maxDist) * 150
-        }%`;
-        const selected = randomChoiceString(['text-primary', 'text-secondary']);
-        return (
-          <div
-            key={keyName}
-            className="fixed overflow-hidden rounded-3xl "
-            style={{
-              opacity,
-            }}
-          >
-            <svg
-              className={`fixed fill-current ${selected}`}
-              width={width}
-              height={height}
-              stroke="currentColor"
-            >
-              <line
-                x1={value.x0}
-                y1={value.y0}
-                x2={value.x1}
-                y2={value.y1}
-                strokeWidth={thikness}
-              />
-            </svg>
-
-            <svg
-              className=" fixed text-base blur-xl fill-current"
-              width={width}
-              height={height}
-              stroke="currentColor"
-            >
-              <line x1={value.x0} y1={value.y0} x2={value.x1} y2={value.y1} />
-            </svg>
-          </div>
-        );
-      })}
-      {circles?.map((value, index) => {
-        const keyName = `circleNumber${index}`;
-        const selected = randomChoiceString(['text-current', 'text-primary']);
-        return (
-          <div id={keyName} key={keyName}>
-            <PlusCircleIcon
-              className={`fixed overflow-hidden ${selected}`}
+          const thikness = `${
+            (value.maxDist - value.dist) / value.maxDist / 2
+          }em`;
+          const opacity = `${
+            ((value.maxDist - value.dist) / value.maxDist) * 150
+          }%`;
+          const selected = randomChoiceString([
+            'text-primary',
+            'text-secondary',
+          ]);
+          return (
+            <div
+              key={keyName}
+              className="absolute"
               style={{
-                width: `${value.radius}px`,
-                top: `${value.randomY - value.radius / 2}px`,
-                left: `${value.randomX - value.radius / 2}px`,
+                opacity,
               }}
-            />
-            <PlusCircleIcon
-              className={`fixed overflow-hidden blur-md ${selected}`}
-              style={{
-                width: `${value.radius + 2}px`,
-                top: `${value.randomY - value.radius / 2}px`,
-                left: `${value.randomX - value.radius / 2}px`,
-              }}
-            />
-          </div>
-        );
-      })}
+            >
+              <svg
+                className={`fill-current ${selected}`}
+                width={width}
+                height={height}
+                stroke="currentColor"
+              >
+                <line
+                  x1={value.x0}
+                  y1={value.y0}
+                  x2={value.x1}
+                  y2={value.y1}
+                  strokeWidth={thikness}
+                />
+              </svg>
+            </div>
+          );
+        })}
+        {circles?.map((value, index) => {
+          const keyName = `circleNumber${index}`;
+          const selected = randomChoiceString(['text-current', 'text-primary']);
+          return (
+            <div key={keyName}>
+              <svg
+                width={width}
+                height={height}
+                className={`fixed  fill-current overflow-hidden ${selected}`}
+              >
+                <circle
+                  cx={value.randomX}
+                  cy={value.randomY}
+                  r={value.radius - 3}
+                />
+              </svg>
+              <svg
+                width={width}
+                height={height}
+                className={`fixed  fill-current overflow-hidden  blur-md ${selected}`}
+              >
+                <circle
+                  cx={value.randomX}
+                  cy={value.randomY}
+                  r={value.radius - 3}
+                />
+              </svg>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -1,3 +1,7 @@
+export function distPoints(a: number, b: number, x: number, y: number) {
+  const result: number = (a - x) * (a - x) + (b - y) * (b - y);
+  return result;
+}
 export function checkAPoint(
   a: number,
   b: number,
@@ -5,9 +9,9 @@ export function checkAPoint(
   y: number,
   r: number
 ) {
-  const distPoints: number = (a - x) * (a - x) + (b - y) * (b - y);
+  const distance: number = distPoints(a, b, x, y);
   const ra = r * r;
-  if (distPoints < ra) {
+  if (distance < ra) {
     return true;
   }
   return false;
@@ -25,4 +29,5 @@ export function distanceBetweenTwoPoints(
   const c = Math.sqrt(a * a + b * b);
   return c;
 }
+
 export default checkAPoint;
