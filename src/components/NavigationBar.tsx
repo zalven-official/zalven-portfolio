@@ -6,6 +6,7 @@ import { BeakerIcon, Bars4Icon } from '@heroicons/react/24/solid';
 import daisyUIThemes from '../assets/daisyUIThemes.json';
 import useChangeTheme from '../helpers/useChangeTheme';
 import Background from './Background';
+import MessageMe from './MessageMe';
 
 const routers = [
   { link: '/', text: 'Home' },
@@ -167,6 +168,7 @@ function NavigationBar({ children }: NavigationProps) {
           </div>
         </div>
       </div>
+      <MessageMe />
     </main>
   );
 }
