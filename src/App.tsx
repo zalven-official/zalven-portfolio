@@ -7,6 +7,7 @@ import About from './pages/About';
 import Project from './pages/Project';
 import Contact from './pages/Contact';
 import NavigationBar from './components/NavigationBar';
+import MessageMe from './components/MessageMe';
 
 export function App() {
   return (
@@ -18,6 +19,7 @@ export function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <MessageMe />
     </NavigationBar>
   );
 }

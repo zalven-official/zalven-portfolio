@@ -4,18 +4,18 @@ import useOnScroll from '../helpers/useOnScroll';
 
 function Contact() {
   const mouseSroll: RefObject<HTMLInputElement> = useRef(null);
-  const navigate = useNavigate();
-  const [canNavigate, setCanNavigate] = useState<boolean>(false);
-  useEffect(() => {
-    setTimeout(() => {
-      setCanNavigate(true);
-    }, 1000);
-  }, []);
-  useOnScroll(mouseSroll, (event) => {
-    if (event.deltaY < 0 && canNavigate) {
-      navigate('/Project');
-    }
-  });
+  // const navigate = useNavigate();
+  // const [canNavigate, setCanNavigate] = useState<boolean>(false);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setCanNavigate(true);
+  //   }, 1000);
+  // }, []);
+  // useOnScroll(mouseSroll, (event) => {
+  //   if (event.deltaY < 0 && canNavigate) {
+  //     navigate('/Project');
+  //   }
+  // });
   return <div>Contact</div>;
 }
 

@@ -34,18 +34,18 @@ const item = {
 };
 function Home() {
   const mouseSroll: RefObject<HTMLInputElement> = useRef(null);
-  const navigate = useNavigate();
-  const [canNavigate, setCanNavigate] = useState<boolean>(false);
-  useEffect(() => {
-    setTimeout(() => {
-      setCanNavigate(true);
-    }, 1000);
-  }, []);
-  useOnScroll(mouseSroll, (event) => {
-    if (event.deltaY > 0 && canNavigate) {
-      navigate('/About');
-    }
-  });
+  // const navigate = useNavigate();
+  // const [canNavigate, setCanNavigate] = useState<boolean>(false);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setCanNavigate(true);
+  //   }, 1000);
+  // }, []);
+  // useOnScroll(mouseSroll, (event) => {
+  //   if (event.deltaY > 0 && canNavigate) {
+  //     navigate('/About');
+  //   }
+  // });
   return (
     <div>
       <motion.div
